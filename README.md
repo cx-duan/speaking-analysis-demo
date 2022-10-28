@@ -1,7 +1,9 @@
 # Demo - Talk Time and Talk Speed Analysis
 
 ## Description:
-This demo was put together to showcase possible applications of AssemblyAI's API. Processing the JSON file returned after processing audio, a user can display an analysis of the speaker's total talk time and speaking speed. There is also recommendations based on the speed of talking by the user and overall showcases a practical application of AssemblyAI's API for speech anaylsis.
+This demo was put together to showcase possible applications of AssemblyAI's API. Processing the JSON file returned after processing audio, a user can display an analysis of the speaker's total talk time and speaking speed. There is also recommendations based on the speed of talking by the user.   
+
+Overall this showcases a practical application of AssemblyAI's API for speech anaylsis.
 
 File contains:
 - YouTube video that is the subject of transcription
@@ -10,7 +12,7 @@ File contains:
 - Words per minute analysis and personalized tips 
 
 Streamlit App:
-TO BE ADDED
+https://cx-duan-talk-time-speed-demo-app-aisi98.streamlitapp.com/
 
 <img width="1339" alt="image" src="https://user-images.githubusercontent.com/57568318/198558457-9356e36e-ce49-4e31-96a9-819e1bad346c.png">
 
