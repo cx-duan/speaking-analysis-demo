@@ -1,4 +1,4 @@
-# Demo - Sentiment Analysis for each Entity
+# Demo - Talk Time and Talk Speed Analysis
 
 ## Description:
 This demo was put together to showcase possible applications of AssemblyAI's API. Processing the JSON file returned after processing audio, a user can display an analysis of the speaker's total talk time and speaking speed. There is also recommendations based on the speed of talking by the user and overall showcases a practical application of AssemblyAI's API for speech anaylsis.
