@@ -42,7 +42,7 @@ for i in range(len(word_data)):
 #Clarity and words per min
 speaker_clarity = sum(word_confidence_scores) / len(word_confidence_scores)
 words_per_minute = round(len(words) / audio_duration_in_minutes)
-
+print(words_per_minute)
 # Total speaking time
 total_speaking_time_a = []
 total_speaking_time_b = []
@@ -90,11 +90,15 @@ with col2:
             st.markdown(f'#### You spoke for a total of {(sum(total_speaking_time_a))/1000} seconds')
         else:
             st.metric(label="You spoke for a total of", value=f'{(sum(total_speaking_time_a))/1000/60} minutes')
+
 #Words per minute metric + tips
     if words_per_minute < 120:
-        st.metric(label="You were speaking at ", value= str(words_per_minute) + ' words per minutes', delta = "-You are speaking a little slow, try to speed down slightly.",delta_color='inverse')
+        st.metric(label="You were speaking at ", value= str(words_per_minute) + ' words per minutes', delta = "-You are speaking a little slow, try to speed down slightly.",delta_color='normal')
         st.markdown('According to the National Center for Voice and Speech, the average rate for English speakers in the US is about 150 words per minute. Aim to be between the 120 - 160 WPM range for a standard speaking rate')
         st.markdown('**_Quick tips:_** ')
+        st.markdown('1. **Be more efficient with your pauses** . See if you are taking pauses that are too frequent or lengthy as that may lose the audience.')
+        st.markdown('2. **Practice getting to the point directly** . Use a stopwatch to time yourself')
+        st.markdown('3.  **Record your talks** . Analyze areas which you can increase speed and practice these portions')
 
     elif words_per_minute > 160:
         st.metric(label="You were speaking at ", value= str(words_per_minute) + ' words per minutes', delta = "You are speaking a little fast, try to slow down slightly.",delta_color='inverse')
@@ -104,9 +108,13 @@ with col2:
         st.markdown('2. Focus on proper **breathing and breath control**')
         st.markdown('3. Use **silence** to strategically to build anticipation, to highlight a key point, or to draw attention and emphasis to a particular idea.')
 
-
-
     else:
         st.metric(label="You were speaking at ", value= str(words_per_minute) + ' words per minutes', delta = "number+delta+gauge")
-        st.markdown('You are in the ideal range for speaking speed! The ideal speaking range is between: 120 - 150 words per minute.')
+        st.markdown('You are in the ideal range for speaking speed! The ideal speaking range is between: 120 - 160 words per minute.')
+        st.markdown('According to the National Center for Voice and Speech, the average rate for English speakers in the US is about *150* words per minute. Aim to be between the *120 - 160* WPM range for a standard speaking rate')
+        st.markdown('**_General tips:_** ')
+        st.markdown('1. **Plan out your presentation** and stick to the times you planned for each section')
+        st.markdown('2. Focus on proper **breathing and breath control**')
+        st.markdown('3.  **Record your talks** . Analyze areas which you are not fully comfortable with and practice these portions')
+
     
