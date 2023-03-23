@@ -2,6 +2,21 @@ import json
 import streamlit as st
 from pytube import YouTube
 from PIL import Image
+from save_audio import save_audio
+from configure import auth_key
+import requests
+from time import sleep
+import time
+
+
+
+transcript_endpoint = "https://api.assemblyai.com/v2/transcript"
+upload_endpoint = 'https://api.assemblyai.com/v2/upload'
+headers_auth_only = {'authorization': auth_key}
+headers = {
+   "authorization": auth_key,
+   "content-type": "application/json"
+}
 
 #Import image and youtube URL
 image = Image.open('svgexport-1.png')
@@ -42,7 +57,7 @@ for i in range(len(word_data)):
 #Clarity and words per min
 speaker_clarity = sum(word_confidence_scores) / len(word_confidence_scores)
 words_per_minute = round(len(words) / audio_duration_in_minutes)
-print(words_per_minute)
+# print(words_per_minute)
 # Total speaking time
 total_speaking_time_a = []
 total_speaking_time_b = []
@@ -68,13 +83,64 @@ for i in range(len(speaker_labels)):
 st.set_page_config(layout="wide")
 st.image(image, caption='Talk time/speed demo')
 st.title(f'{yt.title}')
-st.video("https://www.youtube.com/watch?v=AkcwNwPy7RI")
 
 #set 2 columns
 col1, col2 = st.columns(2)
 with col1:
+# Get link from user
+    video_url = st.text_input(label='Earnings call link', value="https://www.youtube.com/watch?v=UA-ISgpgGsk")
+    st.video("https://www.youtube.com/watch?v=AkcwNwPy7RI")
     st.markdown(f"# Transcript: ")
     st.markdown(f'{transcript_data["text"]}')
+# Save audio locally
+save_location = save_audio(video_url)
+## Upload audio to AssemblyAI
+CHUNK_SIZE = 5242880
+
+def read_file(filename):
+	with open(filename, 'rb') as _file:
+		while True:
+			data = _file.read(CHUNK_SIZE)
+			if not data:
+				break
+			yield data
+
+upload_response = requests.post(
+	upload_endpoint,
+	headers=headers_auth_only, data=read_file(save_location)
+)
+audio_url = upload_response.json()['upload_url']
+print('Uploaded to', audio_url)
+
+## Start transcription job of audio file
+data = {
+	'audio_url': audio_url,
+}
+transcript_response = requests.post(transcript_endpoint, json=data, headers=headers)
+print(transcript_response.json())
+transcript_id = transcript_response.json()['id']
+polling_endpoint = transcript_endpoint + "/" + transcript_id
+
+print("Transcribing at", polling_endpoint)
+with st.container():
+    with st.spinner('Wait for it...'):
+
+## Waiting for transcription to be done
+        status = 'submitted'
+        while status != 'completed':
+            sleep(1)
+            polling_response = requests.get(polling_endpoint, headers=headers)
+            transcript = polling_response.json()['text']
+            status = polling_response.json()['status']
+    st.success('Transcription Completed!')
+
+# Display transcript
+print('creating transcript')
+st.sidebar.header('Transcript of the earnings call')
+st.sidebar.markdown(transcript)
+
+# print(json.dumps(polling_response.json(), indent=4, sort_keys=True))
+
 
 #Analysis on column 2
 with col2:
