@@ -1,4 +1,3 @@
-import json
 import streamlit as st
 from pytube import YouTube
 from PIL import Image
@@ -6,10 +5,10 @@ from save_audio import save_audio
 from configure import auth_key
 import requests
 from time import sleep
-import time
 
+# Streamlit command to run: python3 -m streamlit run app.py
 
-
+#Endpoint variables
 transcript_endpoint = "https://api.assemblyai.com/v2/transcript"
 upload_endpoint = 'https://api.assemblyai.com/v2/upload'
 headers_auth_only = {'authorization': auth_key}
@@ -18,24 +17,90 @@ headers = {
    "content-type": "application/json"
 }
 
-#Import image and youtube URL
+#Import AAI logo
 image = Image.open('svgexport-1.png')
-url = 'https://www.youtube.com/watch?v=AkcwNwPy7RI'
-yt = YouTube(url)
 
-# Streamlit command to run: python3 -m streamlit run app.py
+#Streamlit Frontend
+#Initiate App with config, AAI logo and title
+st.set_page_config(layout="wide")
+st.image(image, caption='Talk time/speed demo')
+st.title('AssemblyAI - Speaking Speed Demo')
 
-#JSON file read. Can be replaced with upload
-with open('response.json', 'r') as transcript_json:
-    transcript_data = json.load(transcript_json)
+#set 2 columns
+col1, col2 = st.columns(2)
+#Populate column 1
+with col1:
+# Get YouTube link from user
+    video_url = st.text_input(label= "Paste YouTube URL here",value="https://www.youtube.com/watch?v=AkcwNwPy7RI")
+# Set progress bar
+    youtube_progress_bar = st.progress(0, text="Transcription in progress")
+# Set title to YouTube video using metadata
+    video_title=(f'{YouTube(video_url).title}')
+    st.subheader(video_title)
+    st.video(video_url)
 
+# Update progress bar
+youtube_progress_bar.progress(10, text="Reading YouTube URL")
+# Save audio locally
+save_location = save_audio(video_url)
+## Upload audio to AssemblyAI
+CHUNK_SIZE = 5242880
+
+def read_file(filename):
+	with open(filename, 'rb') as _file:
+		while True:
+			data = _file.read(CHUNK_SIZE)
+			if not data:
+				break
+			yield data
+
+upload_response = requests.post(
+	upload_endpoint,
+	headers=headers_auth_only, data=read_file(save_location)
+)
+audio_url = upload_response.json()['upload_url']
+# Update progress bar
+youtube_progress_bar.progress(40, text="Uploading to AssemblyAI endpoint")
+print('Uploaded to', audio_url)
+
+## Start transcription job of audio file
+data = {
+	'audio_url': audio_url,
+    'speaker_labels': True,
+}
+transcript_response = requests.post(transcript_endpoint, json=data, headers=headers)
+youtube_progress_bar.progress(60, text="Processing - This takes roughly 15-30% of the file's duration")
+
+
+transcript_id = transcript_response.json()['id']
+polling_endpoint = transcript_endpoint + "/" + transcript_id
+
+print("Transcribing at", polling_endpoint)
+# Waiting for transcription to be done
+status = 'submitted'
+while status != 'completed':
+    sleep(1)
+    polling_response = requests.get(polling_endpoint, headers=headers)
+    full_transcript = polling_response.json()
+    transcript_text = polling_response.json()['text']
+    status = polling_response.json()['status']
+
+# Display transcript
+print('Transcript completed')
+youtube_progress_bar.progress(100, text="Completed transcript")
+st.sidebar.header(video_title)
+st.sidebar.markdown(transcript_text)
+
+# print(json.dumps(polling_response.json(), indent=4, sort_keys=True))
+
+#Analysis on column 2
 #List and variable collection from JSON
 #Select speaker labels from JSON
-speaker_labels = transcript_data['utterances']
+speaker_labels = full_transcript['utterances']
 #Variable for audio duration
-audio_duration_in_minutes = transcript_data['audio_duration'] / 60
+audio_duration_in_minutes = full_transcript['audio_duration'] / 60
 #Words spoken variable
-word_data = transcript_data['words']
+word_data = full_transcript['words']
 #Lists to run 
 speaker = []
 words = []
@@ -78,71 +143,7 @@ for i in range(len(speaker_labels)):
     elif speaker_labels[i]['speaker'] == "B":
         total_speaking_b.append(speaker_labels[i]['text'])
 
-#Streamlit Frontend
-#Initiate App with config, AAI logo and video
-st.set_page_config(layout="wide")
-st.image(image, caption='Talk time/speed demo')
-st.title(f'{yt.title}')
 
-#set 2 columns
-col1, col2 = st.columns(2)
-with col1:
-# Get link from user
-    video_url = st.text_input(label='Earnings call link', value="https://www.youtube.com/watch?v=UA-ISgpgGsk")
-    st.video("https://www.youtube.com/watch?v=AkcwNwPy7RI")
-    st.markdown(f"# Transcript: ")
-    st.markdown(f'{transcript_data["text"]}')
-# Save audio locally
-save_location = save_audio(video_url)
-## Upload audio to AssemblyAI
-CHUNK_SIZE = 5242880
-
-def read_file(filename):
-	with open(filename, 'rb') as _file:
-		while True:
-			data = _file.read(CHUNK_SIZE)
-			if not data:
-				break
-			yield data
-
-upload_response = requests.post(
-	upload_endpoint,
-	headers=headers_auth_only, data=read_file(save_location)
-)
-audio_url = upload_response.json()['upload_url']
-print('Uploaded to', audio_url)
-
-## Start transcription job of audio file
-data = {
-	'audio_url': audio_url,
-}
-transcript_response = requests.post(transcript_endpoint, json=data, headers=headers)
-print(transcript_response.json())
-transcript_id = transcript_response.json()['id']
-polling_endpoint = transcript_endpoint + "/" + transcript_id
-
-print("Transcribing at", polling_endpoint)
-with st.container():
-    with st.spinner('Wait for it...'):
-
-## Waiting for transcription to be done
-        status = 'submitted'
-        while status != 'completed':
-            sleep(1)
-            polling_response = requests.get(polling_endpoint, headers=headers)
-            transcript = polling_response.json()['text']
-            status = polling_response.json()['status']
-    st.success('Transcription Completed!')
-
-# Display transcript
-print('creating transcript')
-st.sidebar.header('Transcript of the earnings call')
-st.sidebar.markdown(transcript)
-
-# print(json.dumps(polling_response.json(), indent=4, sort_keys=True))
-
-
-#Analysis on column 2
 with col2:
     speaker_clarity_round={round(speaker_clarity * 100,2)}
     st.text("")
@@ -155,11 +156,11 @@ with col2:
         if ((sum(total_speaking_time_a)) <= 180000):
             st.markdown(f'#### You spoke for a total of {(sum(total_speaking_time_a))/1000} seconds')
         else:
-            st.metric(label="You spoke for a total of", value=f'{(sum(total_speaking_time_a))/1000/60} minutes')
+            st.metric(label="You spoke for a total of", value='{:.2f} minutes'.format(sum(total_speaking_time_a)/1000/60))
 
 #Words per minute metric + tips
     if words_per_minute < 120:
-        st.metric(label="You were speaking at ", value= str(words_per_minute) + ' words per minutes', delta = "-You are speaking a little slow, try to speed down slightly.",delta_color='normal')
+        st.metric(label="You were speaking at ", value= str(words_per_minute) + ' words per minutes', delta = "You are speaking a little slow, try to speed down slightly.",delta_color='normal')
         st.markdown('According to the National Center for Voice and Speech, the average rate for English speakers in the US is about 150 words per minute. Aim to be between the 120 - 160 WPM range for a standard speaking rate')
         st.markdown('**_Quick tips:_** ')
         st.markdown('1. **Be more efficient with your pauses** . See if you are taking pauses that are too frequent or lengthy as that may lose the audience.')

@@ -1,3 +1,5 @@
-Pillow==9.3.0
-pytube==12.1.0
-streamlit==1.14.0
+Pillow==9.4.0
+pytube==12.1.2
+pytube3==9.6.4
+requests==2.28.1
+streamlit==1.20.0
