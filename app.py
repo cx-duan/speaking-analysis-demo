@@ -2,17 +2,13 @@ import streamlit as st
 from pytube import YouTube
 from PIL import Image
 import util
-from configure import auth_key
 import requests
-import time
 
 # Streamlit command to run: python3 -m streamlit run app.py
 #Endpoint variables
 transcript_endpoint = "https://api.assemblyai.com/v2/transcript"
 upload_endpoint = 'https://api.assemblyai.com/v2/upload'
-headers_auth_only = {'authorization': auth_key}
 headers = {
-   "authorization": auth_key,
    "content-type": "application/json"
 }
 
@@ -33,7 +29,6 @@ with col1:
 # Get YouTube link from user
     auth_key = st.text_input("Enter your AssemblyAI API key", type="password")
     headers = {'authorization': auth_key}
-
     while not auth_key:
         st.warning("Please enter your API key.")
         st.stop()
