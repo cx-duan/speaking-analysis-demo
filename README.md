@@ -1,13 +1,15 @@
-# Demo - Talk Time and Talk Speed Analysis
+# Demo - Speaking Analysis
 
 ## Description:
-This demo was put together to showcase possible applications of AssemblyAI's API. Processing the JSON file returned after processing audio, a user can display an analysis of the speaker's total talk time and speaking speed. There is also recommendations based on the speed of talking by the user.   
+This demo was put together to showcase possible applications of AssemblyAI's API. Processing any YouTube URL, a user can display an analysis of the speaker's total talk time, clarity score and speaking speed. There is also recommendations based on the speed of talking by the user.   
 
 Overall this showcases a practical application of AssemblyAI's API for speech anaylsis.
 
 File contains:
-- YouTube video that is the subject of transcription
-- Transcript of the video
+- Customizable YouTube video that is the subject of transcription
+- Transcript of the video (Speaker by Speaker timestamps)
+- Speaker Diarization Analysis (Limited to 2 Speakers)
+- Clarity Score (How clear the words were to the AI model out of 100)
 - Total talk time
 - Words per minute analysis and personalized tips 
 
