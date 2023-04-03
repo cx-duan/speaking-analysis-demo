@@ -3,17 +3,12 @@ from pytube import YouTube
 from PIL import Image
 import util
 import requests
+import pandas as pd
 
 # Streamlit command to run: python3 -m streamlit run app.py
-#Endpoint variables
-transcript_endpoint = "https://api.assemblyai.com/v2/transcript"
-upload_endpoint = 'https://api.assemblyai.com/v2/upload'
-headers = {
-   "content-type": "application/json"
-}
 
 #Import AAI logo
-image = Image.open('svgexport-1.png')
+image = Image.open('AAI Logo.png')
 
 #Streamlit Frontend
 #Initiate App with config, AAI logo and title
@@ -21,17 +16,17 @@ st.set_page_config(layout="wide")
 st.image(image, caption='Talk time, speed and clarity demo')
 st.title('AssemblyAI - Speaking Analysis Demo')
 
-
 #set 2 columns
 col1, col2 = st.columns(2)
 #Populate column 1
 with col1:
-# Get YouTube link from user
+# Get AssemblyAI Key from user. Cannot provide until provided.
     auth_key = st.text_input("Enter your AssemblyAI API key", type="password")
     headers = {'authorization': auth_key}
     while not auth_key:
         st.warning("Please enter your API key.")
         st.stop()
+# Get YouTube link from user
     video_url = st.text_input(label= "Paste YouTube URL here (Sample URL Provided)",value="https://www.youtube.com/watch?v=AkcwNwPy7RI")
 # Set progress bar
     youtube_progress_bar = st.progress(0, text="Transcription in progress")
@@ -57,7 +52,7 @@ util.poll(polling_endpoint, auth_key)
 
 # Get status
 st.session_state['status']  = util.get_status(polling_endpoint, auth_key)
-
+# Status complete, return transcript
 if st.session_state['status'] =='completed':
     polling_response = requests.get(polling_endpoint, headers=headers)
     full_transcript = polling_response.json()
@@ -67,10 +62,15 @@ if st.session_state['status'] =='completed':
 print('Transcript completed')
 youtube_progress_bar.progress(100, text="Completed transcript")
 st.sidebar.header(video_title, " Transcript")
-st.sidebar.markdown(transcript_text)
+# Transcript by Speaker and Timestamps
+utterances = polling_response.json()['utterances']
+utterances_df = pd.DataFrame(utterances)
+utterances_df['start_str'] = utterances_df['start'].apply(util.convertMillis)
+for index, row in utterances_df.iterrows():
+                st.sidebar.markdown(f'#### Speaker {row["speaker"]} - __{row["start_str"]}__')
+                st.sidebar.markdown(f'{row["text"]}')
 
 #Analysis on column 2
-#List and variable collection from JSON
 #Select speaker labels from JSON
 speaker_labels = full_transcript['utterances']
 #Variable for audio duration
@@ -111,7 +111,6 @@ for i in range(len(speaker_labels)):
     elif speaker_labels[i]['speaker'] == "B":
         total_speaking_time_b.append(speaker_duration)
 
-
 # Speaker Text for each speaker
 total_speaking_a = []
 total_speaking_b = []
@@ -120,13 +119,6 @@ for i in range(len(speaker_labels)):
         total_speaking_a.append(speaker_labels[i]['text'])
     elif speaker_labels[i]['speaker'] == "B":
         total_speaking_b.append(speaker_labels[i]['text'])
-
-print(total_speaking_a)
-print(total_speaking_time_a)
-print("")
-print(total_speaking_b)
-print(total_speaking_time_b)
-
 
 with col2:
 #Total speaking time
