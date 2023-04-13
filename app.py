@@ -44,7 +44,7 @@ polling_endpoint, file = util.transcribe_from_link(video_url, auth_key)
 youtube_progress_bar.progress(40, text="Uploading to AssemblyAI endpoint")
 print('Uploaded')
 
-# # Changes status to 'submitted'
+# Changes status to 'submitted'
 st.session_state['status'] = 'submitted'
 
 # Repeatedly poll the transcript until it is completed
@@ -61,7 +61,8 @@ if st.session_state['status'] =='completed':
 # Display transcript
 print('Transcript completed')
 youtube_progress_bar.progress(100, text="Completed transcript")
-st.sidebar.header(video_title, " Transcript")
+st.sidebar.title("Transcript")
+st.sidebar.header(video_title)
 # Transcript by Speaker and Timestamps
 utterances = polling_response.json()['utterances']
 utterances_df = pd.DataFrame(utterances)
