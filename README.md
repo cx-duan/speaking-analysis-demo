@@ -14,23 +14,24 @@ File contains:
 - Words per minute analysis and personalized tips 
 
 Streamlit App:
-https://cx-duan-talk-time-speed-demo-app-aisi98.streamlitapp.com/
+https://cx-duan-speaking-analysis-demo-app-wt640w.streamlit.app/  
 
-<img width="1339" alt="image" src="https://user-images.githubusercontent.com/57568318/198558457-9356e36e-ce49-4e31-96a9-819e1bad346c.png">
-
+![image](https://user-images.githubusercontent.com/57568318/229958740-40cb19ce-698f-4841-be4c-66ea25032108.png)
 
 ## To Run:
 
 To run Python file:
-```python3 app.py```   
+```python app.py```   
 
 To run app via StreamLit:
-```python3 -m streamlit run app.py``` 
+```python -m streamlit run app.py``` 
 
 
-## Import Libraries
-```pip3 install streamlit```  
-```pip3 install pytube```  
+## Import Main Libraries
+```pip install streamlit```  
+```pip install pytube```  
+```pip install pandas```  
+
 
 
 
